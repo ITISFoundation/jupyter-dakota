@@ -1,0 +1,4 @@
+services:
+  jupyter-dakota:
+    build:
+      dockerfile: Dockerfile
