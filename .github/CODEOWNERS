@@ -9,7 +9,7 @@ Dockerfile          @elisabettai, @cbujard
 Makefile            @elisabettai, @cbujard
 
 # NOTE: '/' denotes the root of the repository
-/.github/            @elisabettai, @cbujard
-/.osparc/            @elisabettai, @cbujard
-/kernels/            @elisabettai, @cbujard
-/docker/             @elisabettai, @cbujard
+/.github/            @elisabettai @cbujard
+/.osparc/            @elisabettai @cbujard
+/kernels/            @elisabettai @cbujard
+/docker/             @elisabettai @cbujard
