@@ -9,6 +9,7 @@ ENV JUPYTER_ENABLE_LAB="yes"
 ENV NOTEBOOK_TOKEN=""
 ENV NOTEBOOK_BASE_DIR="$HOME/work"
 
+ENV DAKOTA_VERSION 6.16.0
 USER root
 
 RUN apt-get update && \
@@ -28,7 +29,16 @@ RUN apt-get update && \
   texlive-fonts-extra \
   zip \
   fonts-freefont-otf \
-  && \
+  libboost-all-dev \
+  libblas-dev \
+  liblapack-dev \
+  libopenmpi-dev \
+  openmpi-bin \
+  gsl-bin \
+  libgsl-dev \
+  perl \
+  libhdf5-dev \
+  gfortran && \
   apt-get clean && rm -rf /var/lib/apt/lists/*   
 
 RUN pip --no-cache --quiet install --upgrade \
@@ -39,32 +49,30 @@ RUN pip --no-cache --quiet install --upgrade \
 # Service (dakota) specific installation
 # --------------------------------------------------------------------
 
-WORKDIR /opt
+FROM base as build
+
+ENV SC_BUILD_TARGET build
+
+WORKDIR /build
+
+# defines the output of the build
+RUN mkdir --parents /build/bin
 
 # Dependencies for compilation
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
   gcc \
-  cmake \
-  libboost-all-dev \
-  libblas-dev \
-  liblapack-dev \
-  libopenmpi-dev \
-  openmpi-bin \
-  gsl-bin \
-  libgsl-dev \
-  perl \
-  libhdf5-dev \
-  gfortran
+  cmake
 
 # Download dakota tar
 
-ENV INSTALL_DIR /opt/dakota
+ENV INSTALL_DIR /build/bin/dakota
 
-RUN wget https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.16.0-public-src-cli.tar.gz && \
-  tar -xzvf dakota-6.16.0-public-src-cli.tar.gz && \
-  rm -rf dakota-6.16.0-public-src-cli.tar.gz
+RUN wget https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz && \
+  tar -xzvf dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz && \
+  rm -rf dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz
 
+# Compile and install dakota, add it to PATH
 RUN cmake -D CMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
   -D CMAKE_C_FLAGS="-O2" -D CMAKE_CXX_FLAGS="-O2"  \
   -D CMAKE_Fortran_FLAGS="-O2" \ 
@@ -73,32 +81,15 @@ RUN cmake -D CMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
   -D DAKOTA_HAVE_MPI:BOOL=TRUE \ 
   -D DAKOTA_HDF5:BOOL=TRUE \
   -D Boost_NO_BOOST_CMAKE:BOOL=TRUE \
-  dakota-6.16.0-public-src-cli
-
-# compile and install
-RUN make -j 4
-RUN make install
-RUN rm -r dakota-6.16.0-public-src-cli
-
-
-ENV PATH="${PATH}:$INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test:$INSTALL_DIR/gui"
-RUN echo "export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test:$INSTALL_DIR/gui:${PATH}" >> ~/.bashrc
-
-WORKDIR ${HOME}/test_dakota
-
-RUN cp ${INSTALL_DIR}/share/dakota/examples/users/rosen_multidim.in ${HOME}/test_dakota
-
-# test Dakota
-RUN dakota -v
-
-# make sure Dakota runs
-WORKDIR ${HOME}/test_dakota
-
-RUN dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout
-
+  dakota-6.16.0-public-src-cli && \
+  make -j 4 && \
+  make install && \
+  rm -r dakota-6.16.0-public-src-cli
 
 # Python kernels and Jupyter
 # --------------------------------------------------------------------
+
+FROM base as production
 
 ENV HOME="/home/$NB_USER"
 
@@ -128,6 +119,11 @@ RUN .venv/bin/pip --no-cache install pip-tools && \
 RUN jupyter serverextension enable voila && \
   jupyter server extension enable voila
 
+# Copy dakota executables
+COPY --from=build /build/bin/dakota dakota
+
+RUN echo "export PATH=${HOME}/dakota/bin:${HOME}/dakota/share/dakota/test:${PATH}" >> ~/.bashrc
+
 # Import matplotlib the first time to build the font cache.
 ENV XDG_CACHE_HOME /home/$NB_USER/.cache/
 RUN MPLBACKEND=Agg .venv/bin/python -c "import matplotlib.pyplot" && \
@@ -145,10 +141,21 @@ RUN mkdir --parents "/home/${NB_USER}/.virtual_documents" && \
   chown --recursive "$NB_USER" "/home/${NB_USER}/.virtual_documents"
 ENV JP_LSP_VIRTUAL_DIR="/home/${NB_USER}/.virtual_documents"
 
+WORKDIR ${HOME}/test_dakota
+
+# Test dakota
+ENV PATH=${HOME}/dakota/bin:${HOME}/dakota/share/dakota/test:${HOME}/dakota/gui:${PATH}
+RUN cp ${HOME}/dakota/share/dakota/examples/users/rosen_multidim.in ${HOME}/test_dakota && \
+    cd ${HOME}/test_dakota && \
+    dakota -v && \
+    dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout
+
 # Copying boot scripts
 COPY --chown=$NB_UID:$NB_GID docker /docker
 
 RUN echo 'export PATH="/home/${NB_USER}/.venv/bin:$PATH"' >> "/home/${NB_USER}/.bashrc"
+
+WORKDIR ${HOME}
 
 EXPOSE 8888
 
