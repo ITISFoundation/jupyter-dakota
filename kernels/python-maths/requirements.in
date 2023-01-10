@@ -1,0 +1,47 @@
+# math-base
+h5py==3.6.0
+matplotlib==3.6.2
+numpy<1.24
+plotly==5.7.0
+scikit-learn==1.2.0
+scipy==1.10.0
+sympy==1.10.1
+pandas==1.5.2
+# optional extensions for pandas
+openpyxl==3.0.9
+xlrd==2.0.1
+xlwt==1.3.0
+
+# jupyter-extensions
+ipyevents==2.0.1
+ipympl==0.8.8
+ipywidgets==7.7.0
+jupyterlab_latex==3.1.0
+jupyterlab_widgets==1.1.0
+jupyterlab-git==0.36.0
+jupyterlab-lsp==3.10.1
+octave_kernel==0.34.2
+python-lsp-server[all]==1.4.1
+voila==0.3.5
+watchdog[watchmedo]==2.1.7
+
+# others (list from CB)
+charset-normalizer<3
+python-dateutil==2.8.2
+jmespath==1.0.1
+fsspec==2022.11.0
+jsonschema==4.17.3
+multidict==6.0.4
+platformdirs==2.6.2
+pyrsistent==0.19.3
+tqdm==4.64.1
+pytest==7.2.0
+tabulate==0.9.0
+tensorflow==2.11.0
+seaborn==0.12.2
+keras==2.11.0
+scikit-gstat==1.0.8
+torch==1.13.1
+
+# osparc API
+osparc==0.5.0
