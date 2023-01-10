@@ -5,8 +5,8 @@
 
 
 # files and folders recursively
-Dockerfile          @elisabettai, @cbujard
-Makefile            @elisabettai, @cbujard
+Dockerfile          @elisabettai @cbujard
+Makefile            @elisabettai @cbujard
 
 # NOTE: '/' denotes the root of the repository
 /.github/            @elisabettai @cbujard
