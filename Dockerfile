@@ -153,7 +153,12 @@ RUN cp ${HOME}/dakota/share/dakota/examples/users/rosen_multidim.in ${HOME}/test
 # Copying boot scripts
 COPY --chown=$NB_UID:$NB_GID docker /docker
 
-RUN echo 'export PATH="/home/${NB_USER}/.venv/bin:$PATH"' >> "/home/${NB_USER}/.bashrc"
+# Check that dakota works within the python venv
+RUN echo 'export PATH="/home/${NB_USER}/.venv/bin:$PATH"' >> "/home/${NB_USER}/.bashrc" && \
+    echo 'PYTHONPATH=$PYTHONPATH:${HOME}/dakota/share/dakota/Python/' >> "/home/${NB_USER}/.bashrc" && \
+    cp -r ${HOME}/dakota/share/dakota/examples/official/gui/analysis_driver_tutorial/complete_python_driver/ ${HOME}/test_dakota/complete_python_driver && \
+    cd ${HOME}/test_dakota/complete_python_driver && \
+    dakota -i CPS.in -o python-driver.out > python-driver.stdout    
 
 WORKDIR ${HOME}
 
