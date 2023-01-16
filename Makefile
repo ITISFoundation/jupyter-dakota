@@ -4,7 +4,7 @@ SHELL = /bin/sh
 .DEFAULT_GOAL := help
 
 export DOCKER_IMAGE_NAME ?= jupyter-dakota
-export DOCKER_IMAGE_TAG ?= 1.0.0
+export DOCKER_IMAGE_TAG ?= 1.0.1
 
 
 define _bumpversion
