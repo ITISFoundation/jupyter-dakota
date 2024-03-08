@@ -1,6 +1,6 @@
 # JupyterLab Dakota
 
-This is the source code of the JupyterLab Dakota Service developed at Sandia National Laboratories (US). 
+This is the source code of the JupyterLab Dakota Service on oSPARC, it include the Dakota framework developed at Sandia National Laboratories (US) in a JupyterLab scripting environment.
 The Dakota project delivers both state-of-the-art research and robust, usable software for optimization and UQ. Broadly, the Dakota software's advanced parametric analyses enable design exploration, model calibration, risk analysis, and quantification of margins and uncertainty with computational models. See the [project website](https://dakota.sandia.gov/) for more information.
 Please visit [Citing Dakota](https://dakota.sandia.gov/content/citing-dakota) if you use this service in your research.
 ____
