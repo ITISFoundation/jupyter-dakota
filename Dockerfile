@@ -9,7 +9,7 @@ ENV JUPYTER_ENABLE_LAB="yes"
 ENV NOTEBOOK_TOKEN=""
 ENV NOTEBOOK_BASE_DIR="$HOME/work"
 
-ENV DAKOTA_VERSION 6.16.0
+ENV DAKOTA_VERSION=6.16.0
 USER root
 
 RUN apt-get update && \
@@ -68,7 +68,8 @@ RUN apt-get update && \
 
 ENV INSTALL_DIR /build/bin/dakota
 
-RUN wget https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz && \
+
+RUN wget https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz && \
   tar -xzvf dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz && \
   rm -rf dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz
 
