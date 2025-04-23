@@ -1,5 +1,5 @@
 ARG JUPYTER_MINIMAL_VERSION=lab-3.3.2@sha256:a4bf48221bfa864759e0f248affec3df1af0a68ee3e43dfc7435d84926ec92e8
-FROM jupyter/minimal-notebook:${JUPYTER_MINIMAL_VERSION} as base
+FROM jupyter/minimal-notebook:${JUPYTER_MINIMAL_VERSION} AS base
 
 
 LABEL maintainer="iavarone"
@@ -9,7 +9,7 @@ ENV JUPYTER_ENABLE_LAB="yes"
 ENV NOTEBOOK_TOKEN=""
 ENV NOTEBOOK_BASE_DIR="$HOME/work"
 
-ENV DAKOTA_VERSION 6.16.0
+ENV DAKOTA_VERSION=6.16.0
 USER root
 
 RUN apt-get update && \
@@ -49,9 +49,9 @@ RUN pip --no-cache --quiet install --upgrade \
 # Service (dakota) specific installation
 # --------------------------------------------------------------------
 
-FROM base as build
+FROM base AS build
 
-ENV SC_BUILD_TARGET build
+ENV SC_BUILD_TARGET=build
 
 WORKDIR /build
 
@@ -66,9 +66,10 @@ RUN apt-get update && \
 
 # Download dakota tar
 
-ENV INSTALL_DIR /build/bin/dakota
+ENV INSTALL_DIR=/build/bin/dakota
 
-RUN wget https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz && \
+
+RUN wget https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz && \
   tar -xzvf dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz && \
   rm -rf dakota-${DAKOTA_VERSION}-public-src-cli.tar.gz
 
@@ -89,7 +90,7 @@ RUN cmake -D CMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
 # Python kernels and Jupyter
 # --------------------------------------------------------------------
 
-FROM base as production
+FROM base AS production
 
 ENV HOME="/home/$NB_USER"
 
@@ -125,7 +126,7 @@ COPY --from=build /build/bin/dakota dakota
 RUN echo "export PATH=${HOME}/dakota/bin:${HOME}/dakota/share/dakota/test:${PATH}" >> ~/.bashrc
 
 # Import matplotlib the first time to build the font cache.
-ENV XDG_CACHE_HOME /home/$NB_USER/.cache/
+ENV XDG_CACHE_HOME=/home/$NB_USER/.cache/
 RUN MPLBACKEND=Agg .venv/bin/python -c "import matplotlib.pyplot" && \
   # run fix permissions only once
   fix-permissions /home/$NB_USER
